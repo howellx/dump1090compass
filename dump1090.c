@@ -122,7 +122,7 @@ struct aircraft {
     int even_cprlon;
     double lat, lon;    /* Coordinated obtained from CPR encoded data. */
     long long odd_cprtime, even_cprtime;
-    string cardinalDirection;
+    char *cardinalDirection;
     struct aircraft *next; /* Next aircraft in our linked list. */
 };
 
@@ -259,26 +259,26 @@ static long long mstime(void) {
     return mst;
 }
 
-string getDir(double lat1, double long1, double lat2, double long2) {
-    margin = π/90; // 2 degree tolerance for cardinal directions
-    o = lat1 - lat2;
-    a = long1 - long2;
-    angle = atan2(o,a);
+char* getDir(double lat1, double long1, double lat2, double long2) {
+    double margin = M_PI/90; // 2 degree tolerance for cardinal directions
+    double o = lat1 - lat2;
+    double a = long1 - long2;
+    double angle = atan2(o,a);
 
-    if (angle > -margin && angle < margin):
+    if((angle > -margin) && (angle < margin))
             return "E";
-    elseif (angle > π/2 - margin && angle < π/2 + margin):
+    else if((angle > M_PI/2 - margin) && (angle < M_PI/2 + margin))
             return "N";
-    elseif (angle > π - margin && angle < -π + margin):
+    else if((angle > M_PI - margin) && (angle < -M_PI + margin))
             return "W";
-    elseif (angle > -π/2 - margin && angle < -π/2 + margin):
+    else if((angle > -M_PI/2 - margin) && (angle < -M_PI/2 + margin))
             return "S";
-    }
-    if (angle > 0 && angle < π/2) {
+    
+    if((angle > 0) && (angle < M_PI/2)) {
         return "NE";
-    } elseif (angle > π/2 && angle < π) {
+    } else if((angle > M_PI/2) && (angle < M_PI)) {
         return "NW";
-    } elseif (angle > -π/2 && angle < 0) {
+    } else if((angle > -M_PI/2) && (angle < 0)) {
         return "SE";
     } else {
         return "SW";
