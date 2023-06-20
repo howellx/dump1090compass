@@ -92,6 +92,9 @@
 #define MODES_NET_SNDBUF_SIZE (1024*64)
 
 #define MODES_NOTUSED(V) ((void) V)
+#define _USE_MATH_DEFINES 
+
+double clientLat, clientLong; 
 
 /* Structure used to describe a networking client. */
 struct client {
@@ -119,6 +122,7 @@ struct aircraft {
     int even_cprlon;
     double lat, lon;    /* Coordinated obtained from CPR encoded data. */
     long long odd_cprtime, even_cprtime;
+    string cardinalDirection;
     struct aircraft *next; /* Next aircraft in our linked list. */
 };
 
@@ -253,6 +257,32 @@ static long long mstime(void) {
     mst = ((long long)tv.tv_sec)*1000;
     mst += tv.tv_usec/1000;
     return mst;
+}
+
+string getDir(double lat1, double long1, double lat2, double long2) {
+    margin = π/90; // 2 degree tolerance for cardinal directions
+    o = lat1 - lat2;
+    a = long1 - long2;
+    angle = atan2(o,a);
+
+    if (angle > -margin && angle < margin):
+            return "E";
+    elseif (angle > π/2 - margin && angle < π/2 + margin):
+            return "N";
+    elseif (angle > π - margin && angle < -π + margin):
+            return "W";
+    elseif (angle > -π/2 - margin && angle < -π/2 + margin):
+            return "S";
+    }
+    if (angle > 0 && angle < π/2) {
+        return "NE";
+    } elseif (angle > π/2 && angle < π) {
+        return "NW";
+    } elseif (angle > -π/2 && angle < 0) {
+        return "SE";
+    } else {
+        return "SW";
+    }
 }
 
 /* =============================== Initialization =========================== */
@@ -1827,7 +1857,7 @@ void interactiveShowData(void) {
 
     printf("\x1b[H\x1b[2J");    /* Clear the screen */
     printf(
-"Hex    Flight   Altitude  Speed   Lat       Lon       Track  Messages Seen %s\n"
+"Hex    Flight   Altitude  Speed   Lat       Lon       Track  Messages Seen Direction%s\n"
 "--------------------------------------------------------------------------------\n",
         progress);
 
