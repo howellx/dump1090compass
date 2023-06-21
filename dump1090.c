@@ -94,7 +94,8 @@
 #define MODES_NOTUSED(V) ((void) V)
 #define _USE_MATH_DEFINES 
 
-double clientLat, clientLong; 
+double clientLat = 42.5742142;
+double clientLon = -71.2840435; 
 
 /* Structure used to describe a networking client. */
 struct client {
@@ -122,7 +123,8 @@ struct aircraft {
     int even_cprlon;
     double lat, lon;    /* Coordinated obtained from CPR encoded data. */
     long long odd_cprtime, even_cprtime;
-    char *cardinalDirection;
+    double bearing;
+    char* cardinalDirection;
     struct aircraft *next; /* Next aircraft in our linked list. */
 };
 
@@ -258,8 +260,8 @@ static long long mstime(void) {
     mst += tv.tv_usec/1000;
     return mst;
 }
-
-char* getDir(double lat1, double long1, double lat2, double long2) {
+/*
+int getDir(double lat1, double long1, double lat2, double long2) {
     double margin = M_PI/90; // 2 degree tolerance for cardinal directions
     double o = lat1 - lat2;
     double a = long1 - long2;
@@ -283,6 +285,26 @@ char* getDir(double lat1, double long1, double lat2, double long2) {
     } else {
         return "SW";
     }
+}
+*/
+
+double getDir(double initialLat, double initialLon, double destinationLat, double destinationLon) {
+    
+    double iLat = initialLat * M_PI / 180.0;
+    double iLon = initialLon * M_PI / 180.0;
+    double dLat = destinationLat * M_PI / 180.0;
+    double dLon = destinationLon * M_PI / 180.0;   
+    
+    double x = cos(dLat)*sin(dLon - iLon);
+    double y = cos(iLat)*sin(dLat)-sin(iLat)*cos(dLat)*cos(dLon-iLon);
+    
+    double angle = atan2(x, y) * 180.0 / M_PI;
+    
+    if(angle < 0) 
+        angle = angle + 360;
+    
+    return angle;
+    
 }
 
 /* =============================== Initialization =========================== */
@@ -1630,6 +1652,8 @@ struct aircraft *interactiveCreateAircraft(uint32_t addr) {
     a->even_cprtime = 0;
     a->lat = 0;
     a->lon = 0;
+    a->bearing = 0;
+    a->cardinalDirection = ""; 
     a->seen = time(NULL);
     a->messages = 0;
     a->next = NULL;
@@ -1775,6 +1799,30 @@ void decodeCPR(struct aircraft *a) {
         a->lat = rlat1;
     }
     if (a->lon > 180) a->lon -= 360;
+    
+
+    a->bearing = getDir(clientLat, clientLon, a->lat, a->lon); 
+    
+    if(a->bearing < 22 || a->bearing > 337)
+        a->cardinalDirection = "N";
+    else if(a->bearing >= 22 && a->bearing <= 67)
+        a->cardinalDirection = "NE";
+    else if(a->bearing > 67 && a->bearing < 112)
+        a->cardinalDirection = "E";
+    else if(a->bearing >= 122 && a->bearing <= 157)
+        a->cardinalDirection = "SE";
+    else if(a->bearing > 157 && a->bearing < 202)
+        a->cardinalDirection = "S";
+    else if(a->bearing >= 202 && a->bearing <= 247)
+        a->cardinalDirection = "SW";
+    else if(a->bearing > 247 && a->bearing < 292)
+        a->cardinalDirection = "W";
+    else
+        a->cardinalDirection = "NW";
+    
+    
+    
+    
 }
 
 /* Receive new messages and populate the interactive mode with more info. */
@@ -1857,8 +1905,8 @@ void interactiveShowData(void) {
 
     printf("\x1b[H\x1b[2J");    /* Clear the screen */
     printf(
-"Hex    Flight   Altitude  Speed   Lat       Lon       Track  Messages Seen Direction%s\n"
-"--------------------------------------------------------------------------------\n",
+"Hex    Flight   Altitude  Speed   Lat       Lon       Track  Messages Seen    Bearing%s\n"
+"--------------------------------------------------------------------------------------\n",
         progress);
 
     while(a && count < Modes.interactive_rows) {
@@ -1870,10 +1918,10 @@ void interactiveShowData(void) {
             speed *= 1.852;
         }
 
-        printf("%-6s %-8s %-9d %-7d %-7.03f   %-7.03f   %-3d   %-9ld %d sec\n",
+        printf("%-6s %-8s %-9d %-7d %-7.03f   %-7.03f   %-3d    %-8ld %2d sec  %-3.1f (%s)\n",
             a->hexaddr, a->flight, altitude, speed,
             a->lat, a->lon, a->track, a->messages,
-            (int)(now - a->seen));
+            (int)(now - a->seen), a->bearing, a->cardinalDirection);
         a = a->next;
         count++;
     }
@@ -2530,6 +2578,8 @@ int main(int argc, char **argv) {
 
     /* Set sane defaults. */
     modesInitConfig();
+    
+    
 
     /* Parse the command line options */
     for (j = 1; j < argc; j++) {
@@ -2573,6 +2623,10 @@ int main(int argc, char **argv) {
         } else if (!strcmp(argv[j],"--aggressive")) {
             Modes.aggressive++;
         } else if (!strcmp(argv[j],"--interactive")) {
+            printf("User Latitude: ");
+            scanf("%f", &clientLat);
+            printf("User Longitude: ");
+            scanf("%f", &clientLat);
             Modes.interactive = 1;
         } else if (!strcmp(argv[j],"--interactive-rows")) {
             Modes.interactive_rows = atoi(argv[++j]);
@@ -2612,6 +2666,8 @@ int main(int argc, char **argv) {
             exit(1);
         }
     }
+    
+    
 
     /* Setup for SIGWINCH for handling lines */
     if (Modes.interactive == 1) signal(SIGWINCH, sigWinchCallback);
@@ -2631,7 +2687,7 @@ int main(int argc, char **argv) {
         }
     }
     if (Modes.net) modesInitNet();
-
+    
     /* If the user specifies --net-only, just run in order to serve network
      * clients without reading data from the RTL device. */
     while (Modes.net_only) {
@@ -2641,8 +2697,13 @@ int main(int argc, char **argv) {
 
     /* Create the thread that will read the data from the device. */
     pthread_create(&Modes.reader_thread, NULL, readerThreadEntryPoint, NULL);
+    
 
+    
     pthread_mutex_lock(&Modes.data_mutex);
+    
+
+    
     while(1) {
         if (!Modes.data_ready) {
             pthread_cond_wait(&Modes.data_cond,&Modes.data_mutex);
