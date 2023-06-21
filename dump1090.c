@@ -94,8 +94,8 @@
 #define MODES_NOTUSED(V) ((void) V)
 #define _USE_MATH_DEFINES 
 
-double clientLat = 42.5742142;
-double clientLon = -71.2840435; 
+double clientLat;
+double clientLon; 
 
 /* Structure used to describe a networking client. */
 struct client {
