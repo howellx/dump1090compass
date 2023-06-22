@@ -167,26 +167,58 @@
         });
     }
 
-    function initialize() {
-        Map = L.map('map_canvas').setView([42.0, -72.0], 8);
-
-	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-	    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-	    maxZoom: 18,
-	    id: 'mapbox/streets-v11',
-	    accessToken: 'your.mapbox.access.token'
-	}).addTo(Map);
-
-        /* Setup our timer to poll from the server. */
-        window.setInterval(function() {
-            fetchData();
-            refreshGeneralInfo();
-        }, 100);
+  // Function to get style of select CSS class
+  function getStyle(ruleClass) {
+    for (var s = 0; s < document.styleSheets.length; s++) {
+      var sheet = document.styleSheets[s];
+      if (sheet.href == null) {
+        var rules = sheet.cssRules ? sheet.cssRules : sheet.rules;
+        if (rules == null) return null;
+        for (var i = 0; i < rules.length; i++) {
+          if (rules[i].selectorText == ruleClass) {
+              return rules[i].style;
+          }
+        }
+      }
     }
+    return null;
+  }
+
+  var markerTextStyle = getStyle('.plane-icon');
+
+  // Set font size for givem zoom
+  function setMarkerTextSize(zoom) {
+    markerTextStyle.fontSize = zoom*3 + 'px';
+  }
+
+  // Set inital font size
+  setMarkerTextSize(Map.getZoom());
+
+  Map.on('zoomend', function(e) {
+    setMarkerTextSize(Map.getZoom());
+  });
+
+  function initialize() {
+    Map = L.map('map_canvas').setView([37.0, 13.0], 8);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: 'mapbox/streets-v11',
+        accessToken: 'your.mapbox.access.token'
+    }).addTo(Map);
+
+          /* Setup our timer to poll from the server. */
+          window.setInterval(function() {
+              fetchData();
+              refreshGeneralInfo();
+          }, 100);
+  }
 
     </script>
   </head>
   <body onload="initialize()">
+    <button onclick="alert(Map.getZoom());">Get Zoom</button>
     <div id="map_canvas" style="width:80%; height:100%"></div>
     <div id="info">
       <div>
