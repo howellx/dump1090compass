@@ -73,14 +73,16 @@
         } else {
             selhtml = '';
         }
+	    
 	var zoom = Map.getZoom();
 	var size = '';
-	if(zoom < 5) {size = "7px";}
-	else {size = (0.3*(zoom**2) - 0.3*zoom + 7).toString() + "px";}
-	
-	
-        he = '<div style="transform: rotate(-'+rotation+'deg); '+selhtml+'"><p style="font-size:'+size+'">✈️</p></div>';
-	//he = '<div style="transform: rotate(-'+rotation+'deg); '+selhtml+'">✈️</div>';
+	if(zoom < 5) 
+	    size = "7px";
+	else 
+	    size = (0.3*(zoom**2) - 0.3*zoom + 7).toString() + "px";
+	    
+	he = '<div style="transform: rotate(-'+rotation+'deg); '+selhtml+'"><p style="font-size:'+size+'">✈️</p></div>';
+	    
         var icon = L.divIcon({html: he, className: 'plane-icon'});
         return icon;
     }
