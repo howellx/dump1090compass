@@ -10,6 +10,8 @@
       .plane-icon {
         padding:0px;
         margin:0px;
+	//font-size:50px;
+	position:absolute;
       }
       #map_canvas { height: 100% }
       #info {
@@ -67,11 +69,18 @@
 
         /* Give a border to the selected plane. */
         if (Selected == plane.hex) {
-            selhtml = 'border:1px dotted #0000aa; border-radius:10px;';
+            selhtml = 'outline:3px dotted #0000aa;';
         } else {
             selhtml = '';
         }
-        he = '<div style="transform: rotate(-'+rotation+'deg); '+selhtml+'">✈️</div>';
+	var zoom = Map.getZoom();
+	var size = '';
+	if(zoom < 5) {size = "7px";}
+	else {size = (0.3*(zoom**2) - 0.3*zoom + 7).toString() + "px";}
+	
+	
+        he = '<div style="transform: rotate(-'+rotation+'deg); '+selhtml+'"><p style="font-size:'+size+'">✈️</p></div>';
+	//he = '<div style="transform: rotate(-'+rotation+'deg); '+selhtml+'">✈️</div>';
         var icon = L.divIcon({html: he, className: 'plane-icon'});
         return icon;
     }
@@ -147,7 +156,6 @@
                     plane.marker = marker;
                     marker.planehex = plane.hex;
                     Planes[plane.hex] = plane;
-                    icon.style.fontsize = (Map.getZoom()*3).toString() + "px";
                 }
 
                 // FIXME: Set the title
@@ -168,39 +176,22 @@
         });
     }
 
-  // Function to get style of select CSS class
-  function getStyle(ruleClass) {
-    for (var s = 0; s < document.styleSheets.length; s++) {
-      var sheet = document.styleSheets[s];
-      if (sheet.href == null) {
-        var rules = sheet.cssRules ? sheet.cssRules : sheet.rules;
-        if (rules == null) return null;
-        for (var i = 0; i < rules.length; i++) {
-          if (rules[i].selectorText == ruleClass) {
-              return rules[i].style;
-          }
-        }
-      }
+    function initialize() {
+        Map = L.map('map_canvas').setView([42.6, -71.3], 8);
+
+	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+	    maxZoom: 18,
+	    id: 'mapbox/streets-v11',
+	    accessToken: 'your.mapbox.access.token'
+	}).addTo(Map);
+
+        /* Setup our timer to poll from the server. */
+        window.setInterval(function() {
+            fetchData();
+            refreshGeneralInfo();
+        }, 10);
     }
-    return null;
-  }
-
-  function initialize() {
-    Map = L.map('map_canvas').setView([42.0, -72.0], 8);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        maxZoom: 18,
-        id: 'mapbox/streets-v11',
-        accessToken: 'your.mapbox.access.token'
-    }).addTo(Map);
-
-          /* Setup our timer to poll from the server. */
-          window.setInterval(function() {
-              fetchData();
-              refreshGeneralInfo();
-          }, 100);
-  }
 
     </script>
   </head>
