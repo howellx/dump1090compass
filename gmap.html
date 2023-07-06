@@ -10,8 +10,6 @@
       .plane-icon {
         padding:0px;
         margin:0px;
-	//font-size:50px;
-	position:absolute;
       }
       #map_canvas { height: 100% }
       #info {
@@ -48,6 +46,11 @@
     Planes={};
     NumPlanes = 0;
     Selected=null
+    var clientLat = 42.5747;
+    var clientLon = -71.2835;
+
+
+
 
     function getIconForPlane(plane) {
         var r = 255, g = 255, b = 0;
@@ -73,17 +76,36 @@
         } else {
             selhtml = '';
         }
-	    
-	var zoom = Map.getZoom();
-	var size = '';
-	if(zoom < 5) 
-	    size = "7px";
-	else 
-	    size = (0.3*(zoom**2) - 0.3*zoom + 7).toString() + "px";
-	    
-	he = '<div style="transform: rotate(-'+rotation+'deg); '+selhtml+'"><p style="font-size:'+size+'">✈️</p></div>';
-	    
-        var icon = L.divIcon({html: he, className: 'plane-icon'});
+        var zoom = Map.getZoom();
+        var size = '';
+        if(zoom < 5) 
+            size = "4px";
+        else 
+            size = (0.2*(zoom**2) - 0.3*zoom + 4).toString() + "px";
+        
+        var yanchor = 0;
+        var xanchor = 0;
+
+        if(zoom >= 10)
+          yanchor = 10*zoom-60;
+        else if(zoom == 9)
+          yanchor = 33;
+        else if(zoom == 8)
+          yanchor = 27;
+        else if(zoom == 7)
+          yanchor = 23;
+        else if(zoom == 6){
+          yanchor = 16;
+        }  
+        else if(zoom == 5)
+          yanchor = 14;
+        else{
+          yanchor = 4;
+          xanchor = 4;
+        }
+        he = '<div style="transform: rotate(-'+rotation+'deg); '+selhtml+'"><p style="font-size:'+size+'">✈️</p></div>';
+            
+        var icon = L.divIcon({html: he, iconAnchor: [xanchor, yanchor], className: 'plane-icon'});
         return icon;
     }
 
@@ -178,22 +200,87 @@
         });
     }
 
-    function initialize() {
-        Map = L.map('map_canvas').setView([42.6, -71.3], 8);
-
-	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-	    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-	    maxZoom: 18,
-	    id: 'mapbox/streets-v11',
-	    accessToken: 'your.mapbox.access.token'
-	}).addTo(Map);
-
-        /* Setup our timer to poll from the server. */
-        window.setInterval(function() {
-            fetchData();
-            refreshGeneralInfo();
-        }, 10);
+  // Function to get style of select CSS class
+  function getStyle(ruleClass) {
+    for (var s = 0; s < document.styleSheets.length; s++) {
+      var sheet = document.styleSheets[s];
+      if (sheet.href == null) {
+        var rules = sheet.cssRules ? sheet.cssRules : sheet.rules;
+        if (rules == null) return null;
+        for (var i = 0; i < rules.length; i++) {
+          if (rules[i].selectorText == ruleClass) {
+              return rules[i].style;
+          }
+        }
+      }
     }
+    return null;
+  }
+
+
+  function clientIcon()
+  {
+
+
+    var zoom = Map.getZoom();
+
+    var size = '';
+    if(zoom < 5) 
+        size = "4px";
+    else 
+        size = (0.2*(zoom**2) - 0.3*zoom + 4).toString() + "px";
+        
+    var yanchor = 0;
+    var xanchor;
+
+    if(zoom >= 10)
+      yanchor = 10*zoom-60;
+    else if(zoom == 9)
+      yanchor = 33;
+    else if(zoom == 8)
+      yanchor = 27;
+    else if(zoom == 7)
+      yanchor = 23;
+    else if(zoom == 6){
+      yanchor = 16;
+    }  
+    else if(zoom == 5)
+      yanchor = 14;
+    else{
+      yanchor = 4;
+      xanchor = 4;
+    }
+      
+        
+    he = '<div><p style="font-size:'+size+'">🧍</p></div>';
+    var icon = L.divIcon({html: he, iconAnchor: [xanchor, yanchor], className: 'plane-icon'});
+    return icon;
+  }
+
+  function initialize() {
+    Map = L.map('map_canvas').setView([42.0, -72.0], 8);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 14,
+        id: 'mapbox/streets-v11',
+        accessToken: 'your.mapbox.access.token'
+    }).addTo(Map);
+
+
+    
+    var clientMarker = L.marker([clientLat, clientLon], {icon: clientIcon()}).addTo(Map);
+
+          /* Setup our timer to poll from the server. */
+          window.setInterval(function() {
+              fetchData();
+              refreshGeneralInfo();
+              clientMarker.setIcon(clientIcon())
+          }, 100);
+  }
+
+
+
 
     </script>
   </head>
