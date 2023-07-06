@@ -49,8 +49,78 @@
     var clientLat = 42.5747;
     var clientLon = -71.2835;
 
+  
+    function getSizeStr(zoom)
+    {
+        var size;
+
+        if(zoom < 5) 
+            size = "6px";
+        else 
+            size = (0.3*(zoom**2) - 0.3*zoom + 6).toString() + "px";
+
+        return size;
+    }
+
+    function getYAnchor(zoom)
+    {
+      //increasing yanochor moves the emoji up, lowering moves it down
+        var yanchor = 0;
+
+        if(zoom >= 10)
+          yanchor = 10*zoom-20;
+        else if(zoom == 9)
+          yanchor = 63;
+        else if(zoom == 8)
+          yanchor = 51;
+        else if(zoom == 7)
+          yanchor = 42;
+        else if(zoom == 6){
+          yanchor = 31;
+        }  
+        else if(zoom == 5)
+          yanchor = 23;
+        else{
+          yanchor = 7;
+        }
+
+        return yanchor;
+    }
+
+    function getXAnchor(zoom)
+    {
+      //increasing xanochor moves left, lowering moves it right
+        var xanchor = 0;
 
 
+        if(zoom < 8 && zoom > 4)
+        {
+          xanchor = 2*zoom - 5;
+        }
+        else if(zoom < 4)
+        {
+          xanchor = 5;
+        }
+
+        // if(zoom >= 10)
+        //   xanchor = 10*zoom-20;
+        // else if(zoom == 9)
+        //   xanchor = 63;
+        // else if(zoom == 8)
+        //   xanchor = 51;
+        // else if(zoom == 7)
+        //   xanchor = 42;
+        // else if(zoom == 6){
+        //   xanchor = 31;
+        // }  
+        // else if(zoom == 5)
+        //   xanchor = 23;
+        // else{
+        //   xanchor = 7;
+        // }
+
+        return xanchor;
+    }
 
     function getIconForPlane(plane) {
         var r = 255, g = 255, b = 0;
@@ -77,32 +147,12 @@
             selhtml = '';
         }
         var zoom = Map.getZoom();
-        var size = '';
-        if(zoom < 5) 
-            size = "4px";
-        else 
-            size = (0.2*(zoom**2) - 0.3*zoom + 4).toString() + "px";
-        
-        var yanchor = 0;
-        var xanchor = 0;
+        var size = getSizeStr(zoom);
 
-        if(zoom >= 10)
-          yanchor = 10*zoom-60;
-        else if(zoom == 9)
-          yanchor = 33;
-        else if(zoom == 8)
-          yanchor = 27;
-        else if(zoom == 7)
-          yanchor = 23;
-        else if(zoom == 6){
-          yanchor = 16;
-        }  
-        else if(zoom == 5)
-          yanchor = 14;
-        else{
-          yanchor = 4;
-          xanchor = 4;
-        }
+        
+        var yanchor = getYAnchor(zoom);
+        var xanchor = getXAnchor(zoom);
+        
         he = '<div style="transform: rotate(-'+rotation+'deg); '+selhtml+'"><p style="font-size:'+size+'">✈️</p></div>';
             
         var icon = L.divIcon({html: he, iconAnchor: [xanchor, yanchor], className: 'plane-icon'});
@@ -224,33 +274,11 @@
 
     var zoom = Map.getZoom();
 
-    var size = '';
-    if(zoom < 5) 
-        size = "4px";
-    else 
-        size = (0.2*(zoom**2) - 0.3*zoom + 4).toString() + "px";
-        
-    var yanchor = 0;
     var xanchor;
-
-    if(zoom >= 10)
-      yanchor = 10*zoom-60;
-    else if(zoom == 9)
-      yanchor = 33;
-    else if(zoom == 8)
-      yanchor = 27;
-    else if(zoom == 7)
-      yanchor = 23;
-    else if(zoom == 6){
-      yanchor = 16;
-    }  
-    else if(zoom == 5)
-      yanchor = 14;
-    else{
-      yanchor = 4;
-      xanchor = 4;
-    }
-      
+    var size = getSizeStr(zoom);
+        
+    var yanchor = getYAnchor(zoom);
+    var xanchor = getXAnchor(zoom);
         
     he = '<div><p style="font-size:'+size+'">🧍</p></div>';
     var icon = L.divIcon({html: he, iconAnchor: [xanchor, yanchor], className: 'plane-icon'});
@@ -267,7 +295,14 @@
         accessToken: 'your.mapbox.access.token'
     }).addTo(Map);
 
-
+    // var rIcon = L.divIcon({
+    //     html: '<div><p></p></div>',
+    //     //className: 'plane-icon',
+    //     iconSize: [10, 10],
+    //     iconAnchor: [5, 5]
+    // });
+    // //42.46, -71.2
+    // var rMarker = L.marker([42.36, -71.0], {icon:rIcon}).addTo(Map);
     
     var clientMarker = L.marker([clientLat, clientLon], {icon: clientIcon()}).addTo(Map);
 
