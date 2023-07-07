@@ -2379,6 +2379,98 @@ int handleHTTPRequest(struct client *c) {
     return !keepalive;
 }
 
+function sendClientData(struct client *c) {
+    char hdr[512];
+    int clen, hdrlen;
+    int httpver, keepalive;
+    char *p, *url, *content;
+    char *ctype;
+
+    if (Modes.debug & MODES_DEBUG_NET)
+        printf("\nHTTP request: %s\n", c->buf);
+
+    /* Minimally parse the request. */
+    httpver = (strstr(c->buf, "HTTP/1.1") != NULL) ? 11 : 10;
+    if (httpver == 10) {
+        /* HTTP 1.0 defaults to close, unless otherwise specified. */
+        keepalive = strstr(c->buf, "Connection: keep-alive") != NULL;
+    } else if (httpver == 11) {
+        /* HTTP 1.1 defaults to keep-alive, unless close is specified. */
+        keepalive = strstr(c->buf, "Connection: close") == NULL;
+    }
+
+    /* Identify he URL. */
+    p = strchr(c->buf,' ');
+    if (!p) return 1; /* There should be the method and a space... */
+    url = ++p; /* Now this should point to the requested URL. */
+    p = strchr(p, ' ');
+    if (!p) return 1; /* There should be a space before HTTP/... */
+    *p = '\0';
+
+    if (Modes.debug & MODES_DEBUG_NET) {
+        printf("\nHTTP keep alive: %d\n", keepalive);
+        printf("HTTP requested URL: %s\n\n", url);
+    }
+
+    url = "/data2.json";
+    /* Select the content to send, we have just two so far:
+     * "/" -> Our google map application.
+     * "/data.json" -> Our ajax request to update planes. */
+    if (strstr(url, "/data.json")) {
+        content = aircraftsToJson(&clen);
+        ctype = MODES_CONTENT_TYPE_JSON;
+    } else {
+        struct stat sbuf;
+        int fd = -1;
+
+        if (stat("gmap.html",&sbuf) != -1 &&
+            (fd = open("gmap.html",O_RDONLY)) != -1)
+        {
+            content = malloc(sbuf.st_size);
+            if (read(fd,content,sbuf.st_size) == -1) {
+                snprintf(content,sbuf.st_size,"Error reading from file: %s",
+                    strerror(errno));
+            }
+            clen = sbuf.st_size;
+        } else {
+            char buf[128];
+
+            clen = snprintf(buf,sizeof(buf),"Error opening HTML file: %s",
+                strerror(errno));
+            content = strdup(buf);
+        }
+        if (fd != -1) close(fd);
+        ctype = MODES_CONTENT_TYPE_HTML;
+    }
+
+    /* Create the header and send the reply. */
+    hdrlen = snprintf(hdr, sizeof(hdr),
+        "HTTP/1.1 200 OK\r\n"
+        "Server: Dump1090\r\n"
+        "Content-Type: %s\r\n"
+        "Connection: %s\r\n"
+        "Content-Length: %d\r\n"
+        "Access-Control-Allow-Origin: *\r\n"
+        "\r\n",
+        ctype,
+        keepalive ? "keep-alive" : "close",
+        clen);
+
+    if (Modes.debug & MODES_DEBUG_NET)
+        printf("HTTP Reply header:\n%s", hdr);
+
+    /* Send header and content. */
+    if (write(c->fd, hdr, hdrlen) != hdrlen ||
+        write(c->fd, content, clen) != clen)
+    {
+        free(content);
+        return 1;
+    }
+    free(content);
+    Modes.stat_http_requests++;
+    return !keepalive;
+}
+
 /* This function polls the clients using read() in order to receive new
  * messages from the net.
  *
