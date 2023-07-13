@@ -1654,6 +1654,8 @@ struct aircraft *interactiveCreateAircraft(uint32_t addr) {
     a->lat = 0;
     a->lon = 0;
     a->bearing = 0;
+    a->cLat = clientLat;
+    a->cLon = clientLon;
     a->cardinalDirection = ""; 
     a->seen = time(NULL);
     a->messages = 0;
