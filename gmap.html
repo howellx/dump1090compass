@@ -309,14 +309,22 @@
     // });
     // //42.46, -71.2
     // var rMarker = L.marker([42.36, -71.0], {icon:rIcon}).addTo(Map);
+    var firstClient = 1;
     
-    var clientMarker = L.marker([clientLat, clientLon], {icon: clientIcon()}).addTo(Map);
 
           /* Setup our timer to poll from the server. */
           window.setInterval(function() {
               fetchData();
               refreshGeneralInfo();
-              clientMarker.setIcon(clientIcon())
+              if(firstClient == 1 && (clientLat != null && clientLon == null))
+              {
+                  var clientMarker = L.marker([clientLat, clientLon], {icon: clientIcon()}).addTo(Map); 
+                  firstClient = 0;
+              }
+              else if(firstClient == 0 && (clientLat != null && clientLon == null))
+              {
+                clientMarker.setIcon(clientIcon())
+              }
           }, 100);
   }
 
