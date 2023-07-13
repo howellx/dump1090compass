@@ -46,8 +46,8 @@
     Planes={};
     NumPlanes = 0;
     Selected=null
-    var clientLat = 42.5747;
-    var clientLon = -71.2835;
+    var clientLat = null;
+    var clientLon = null;
 
   
     function getSizeStr(zoom)
@@ -231,6 +231,12 @@
                     marker.planehex = plane.hex;
                     Planes[plane.hex] = plane;
                 }
+  
+                if(clientLat == null || clientLon == null)
+                {
+                    clientLat = plane.cLat;
+                    clientLon = plane.cLon;
+                }
 
                 // FIXME: Set the title
                 // if (plane.flight.length == 0)
@@ -249,7 +255,7 @@
             }
         });
     }
-
+      
   // Function to get style of select CSS class
   function getStyle(ruleClass) {
     for (var s = 0; s < document.styleSheets.length; s++) {
