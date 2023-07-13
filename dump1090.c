@@ -125,6 +125,7 @@ struct aircraft {
     long long odd_cprtime, even_cprtime;
     double bearing;
     char* cardinalDirection;
+    double cLat, cLon;
     struct aircraft *next; /* Next aircraft in our linked list. */
 };
 
@@ -2252,9 +2253,9 @@ char *aircraftsToJson(int *len) {
             l = snprintf(p,buflen,
                 "{\"hex\":\"%s\", \"flight\":\"%s\", \"lat\":%f, "
                 "\"lon\":%f, \"altitude\":%d, \"track\":%d, "
-                "\"speed\":%d},\n",
+                "\"speed\":%d, \"cLat\":%f, \"cLon\":%f},\n",
                 a->hexaddr, a->flight, a->lat, a->lon, a->altitude, a->track,
-                a->speed);
+                a->speed, a->cLat, a->cLon);
             p += l; buflen -= l;
             /* Resize if needed. */
             if (buflen < 256) {
