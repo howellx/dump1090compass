@@ -94,8 +94,7 @@
 #define MODES_NOTUSED(V) ((void) V)
 #define _USE_MATH_DEFINES 
 
-double clientLat;
-double clientLon; 
+float clientLat, clientLon; 
 
 /* Structure used to describe a networking client. */
 struct client {
@@ -125,7 +124,7 @@ struct aircraft {
     long long odd_cprtime, even_cprtime;
     double bearing;
     char* cardinalDirection;
-    double cLat, cLon;
+    float cLat, cLon;
     struct aircraft *next; /* Next aircraft in our linked list. */
 };
 
@@ -261,33 +260,6 @@ static long long mstime(void) {
     mst += tv.tv_usec/1000;
     return mst;
 }
-/*
-int getDir(double lat1, double long1, double lat2, double long2) {
-    double margin = M_PI/90; // 2 degree tolerance for cardinal directions
-    double o = lat1 - lat2;
-    double a = long1 - long2;
-    double angle = atan2(o,a);
-
-    if((angle > -margin) && (angle < margin))
-            return "E";
-    else if((angle > M_PI/2 - margin) && (angle < M_PI/2 + margin))
-            return "N";
-    else if((angle > M_PI - margin) && (angle < -M_PI + margin))
-            return "W";
-    else if((angle > -M_PI/2 - margin) && (angle < -M_PI/2 + margin))
-            return "S";
-    
-    if((angle > 0) && (angle < M_PI/2)) {
-        return "NE";
-    } else if((angle > M_PI/2) && (angle < M_PI)) {
-        return "NW";
-    } else if((angle > -M_PI/2) && (angle < 0)) {
-        return "SE";
-    } else {
-        return "SW";
-    }
-}
-*/
 
 double getDir(double initialLat, double initialLon, double destinationLat, double destinationLon) {
     
@@ -1840,6 +1812,8 @@ struct aircraft *interactiveReceiveData(struct modesMessage *mm) {
     a = interactiveFindAircraft(addr);
     if (!a) {
         a = interactiveCreateAircraft(addr);
+        //printf("aaaa %f aaaa %f\n", a->cLat, clientLat);
+        //printf("bbbb %f bbbb %f\n", a->cLon, clientLon);
         a->next = Modes.aircrafts;
         Modes.aircrafts = a;
     } else {
@@ -2629,7 +2603,7 @@ int main(int argc, char **argv) {
             printf("User Latitude: ");
             scanf("%f", &clientLat);
             printf("User Longitude: ");
-            scanf("%f", &clientLat);
+            scanf("%f", &clientLon);
             Modes.interactive = 1;
         } else if (!strcmp(argv[j],"--interactive-rows")) {
             Modes.interactive_rows = atoi(argv[++j]);
