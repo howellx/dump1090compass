@@ -288,7 +288,7 @@
     var yanchor = getYAnchor(zoom);
     var xanchor = getXAnchor(zoom);
         
-    he = '<div><p style="font-size:'+size+'">x</p></div>';
+    he = '<div><p style="font-size:'+size+'">X</p></div>';
     var icon = L.divIcon({html: he, iconAnchor: [xanchor, yanchor], className: 'plane-icon'});
     return icon;
   }
@@ -338,6 +338,7 @@
     </script>
   </head>
   <body onload="initialize()">
+    <button onclick="alert(Map.getZoom());">Get Zoom</button>
     <div id="map_canvas" style="width:80%; height:100%"></div>
     <div id="info">
       <div>
