@@ -122,6 +122,59 @@
         return xanchor;
     }
 
+    function getClientYAnchor(zoom)
+    {
+      //increasing yanochor moves the emoji up, lowering moves it down
+        var yanchor = 0;
+
+        if(zoom == 14)
+          yanchor = 130;
+        else if(zoom == 13)
+          yanchor = 114;
+        else if(zoom == 12)
+          yanchor = 97;
+        else if(zoom == 11)
+          yanchor = 81;
+        else if(zoom == 10){
+          yanchor = 68;
+        }  
+        else if(zoom <= 9 && zoom >= 6)
+          yanchor = zoom*10 - 34;
+        else if(zoom == 5)
+          yanchor = 19;
+        else{
+          yanchor = 7;
+        }
+
+
+        return yanchor;
+    }
+
+    function getClientXAnchor(zoom)
+    {
+      //increasing xanochor moves left, lowering moves it right
+        var xanchor = 0;
+
+
+        if(zoom == 14)
+          xanchor = 25;
+        else if(zoom == 13)
+          xanchor = 24;
+        else if(zoom == 12)
+          xanchor = 19;
+        else if(zoom <= 11 && zoom >= 7)
+          xanchor = zoom*2 - 7;
+        else if(zoom == 6)
+          xanchor = 6;
+        else if(zoom == 5)
+          xanchor = 4;
+        else{
+          xanchor = 2;
+        }
+
+        return xanchor;
+    }
+
     function getIconForPlane(plane) {
         var r = 255, g = 255, b = 0;
         var maxalt = 40000; /* Max altitude in the average case */
@@ -285,8 +338,8 @@
     var xanchor;
     var size = getSizeStr(zoom);
         
-    var yanchor = getYAnchor(zoom);
-    var xanchor = getXAnchor(zoom);
+    var yanchor = getClientYAnchor(zoom);
+    var xanchor = getClientXAnchor(zoom);
         
     he = '<div><p style="font-size:'+size+'">X</p></div>';
     var icon = L.divIcon({html: he, iconAnchor: [xanchor, yanchor], className: 'plane-icon'});
