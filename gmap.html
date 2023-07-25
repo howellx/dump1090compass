@@ -10,6 +10,11 @@
       .plane-icon {
         padding:0px;
         margin:0px;
+	color:blue;
+      }
+      .client-icon {
+        padding:0px;
+        margin:0px;
       }
       #map_canvas { height: 100% }
       #info {
@@ -339,8 +344,8 @@
     var yanchor = getClientYAnchor(zoom);
     var xanchor = getClientXAnchor(zoom);
         
-    he = '<div><p style="font-size:'+size+'">X</p></div>';
-    var icon = L.divIcon({html: he, iconAnchor: [xanchor, yanchor], className: 'plane-icon'});
+    he = '<div><p style="font-size:'+size+'">x</p></div>';
+    var icon = L.divIcon({html: he, iconAnchor: [xanchor, yanchor], className: 'client-icon'});
     return icon;
   }
 
@@ -378,7 +383,7 @@
               }
               else if(firstClient == 0 && (clientLat != null && clientLon != null))
               {
-                clientMarker.setIcon(clientIcon())
+                clientMarker.setIcon(clientIcon());
               }
           }, 100);
   }
@@ -389,7 +394,6 @@
     </script>
   </head>
   <body onload="initialize()">
-    <button onclick="alert(Map.getZoom());">Get Zoom</button>
     <div id="map_canvas" style="width:80%; height:100%"></div>
     <div id="info">
       <div>
