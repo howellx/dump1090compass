@@ -1,6 +1,16 @@
 Dump1090 README
 ===
 
+"""
+Modifications made by howellx
+
+* Added bearing/cardinal direction of each aircraft based on user inputted lat and lon in all branches
+* Added modifications to mapping to make aircrafts more visible on the web mapping in all branches except "bearing"
+* Added modifications to display the user lat and lon on the web mapping in the "bearing-and-client+aircraft-mapping" branch (this is the default branch)
+
+"""
+
+
 Dump 1090 is a Mode S decoder specifically designed for RTLSDR devices.
 
 The main features are:
