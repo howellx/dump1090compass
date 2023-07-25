@@ -46,9 +46,6 @@
     Planes={};
     NumPlanes = 0;
     Selected=null
-    var clientLat = 42.5747;
-    var clientLon = -71.2835;
-
   
     function getSizeStr(zoom)
     {
@@ -267,26 +264,8 @@
     return null;
   }
 
-
-  function clientIcon()
-  {
-
-
-    var zoom = Map.getZoom();
-
-    var xanchor;
-    var size = getSizeStr(zoom);
-        
-    var yanchor = getYAnchor(zoom);
-    var xanchor = getXAnchor(zoom);
-        
-    he = '<div><p style="font-size:'+size+'">x</p></div>';
-    var icon = L.divIcon({html: he, iconAnchor: [xanchor, yanchor], className: 'plane-icon'});
-    return icon;
-  }
-
   function initialize() {
-    Map = L.map('map_canvas').setView([clientLat, clientLat], 8);
+    Map = L.map('map_canvas').setView([42.5747, -71.2835;], 8);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -304,13 +283,11 @@
     // //42.46, -71.2
     // var rMarker = L.marker([42.36, -71.0], {icon:rIcon}).addTo(Map);
     
-    var clientMarker = L.marker([clientLat, clientLon], {icon: clientIcon()}).addTo(Map);
 
           /* Setup our timer to poll from the server. */
           window.setInterval(function() {
               fetchData();
               refreshGeneralInfo();
-              clientMarker.setIcon(clientIcon())
           }, 100);
   }
 
